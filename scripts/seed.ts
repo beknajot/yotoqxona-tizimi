@@ -1,13 +1,13 @@
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-// PostgreSQL uchun standart PrismaClient kifoya
-const db = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const db = new PrismaClient({ adapter });
 
 async function main() {
-  // Avvalgi ma'lumotlarni tozalash (PostgreSQL da truncate yoki deleteMany)
   await db.scoreLog.deleteMany();
   await db.monthlyScore.deleteMany();
   await db.studentUser.deleteMany();
@@ -15,9 +15,6 @@ async function main() {
   await db.user.deleteMany();
   await db.category.deleteMany();
 
-  // =====================
-  // 1. KATEGORIYALAR (18 ta)
-  // =====================
   const CATEGORIES = [
     { id: "cat1", name: "Nazarda tutilmagan intizom buzilishi", minPoints: 1, maxPoints: 50, order: 1 },
     { id: "cat2", name: "Yotoqxonadan vaqtincha ketish haqida ogohlantirmaslik", minPoints: 30, maxPoints: 30, order: 2 },
@@ -44,9 +41,6 @@ async function main() {
   }
   console.log('✅ 18 ta kategoriya qo\'shildi');
 
-  // =====================
-  // 2. ADMIN
-  // =====================
   const hashedPassword = await bcrypt.hash('123456', 10);
 
   await db.user.create({
@@ -54,9 +48,6 @@ async function main() {
   });
   console.log('✅ Admin qo\'shildi (login: admin, parol: 123456)');
 
-  // =====================
-  // 3. TARBIYACHILAR
-  // =====================
   const maleEd1 = await db.user.create({
     data: { id: 'ed_m1', name: 'Rustam aka', login: 'rustam', password: hashedPassword, role: 'EDUCATOR', gender: 'MALE' }
   });
@@ -71,9 +62,6 @@ async function main() {
   });
   console.log('✅ 4 ta tarbiyachi qo\'shildi (parol: 123456)');
 
-  // =====================
-  // 4. O'QUVCHILAR
-  // =====================
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
