@@ -169,7 +169,7 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
                 <label className="text-sm font-medium">Jinsi</label>
                 <Select 
                   value={formData.gender}
-                  onValueChange={(v) => setFormData({...formData, gender: v})}
+                  onValueChange={(v) => setFormData({...formData, gender: v || ""})}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -289,7 +289,7 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
               <label className="text-sm font-medium">Jinsi</label>
               <Select 
                 value={formData.gender}
-                onValueChange={(v) => setFormData({...formData, gender: v})}
+                onValueChange={(v) => setFormData({...formData, gender: v || ""})}
               >
                 <SelectTrigger>
                   <SelectValue />
