@@ -11,7 +11,8 @@ import {
   LogOut, 
   Menu,
   X,
-  CreditCard
+  CreditCard,
+  BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,7 +25,6 @@ export default function DashboardLayout({
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Hozirgi test rejimi uchun rolni url orqali aniqlaymiz:
   const isAdmin = pathname.startsWith("/admin");
 
   const adminLinks = [
@@ -32,12 +32,14 @@ export default function DashboardLayout({
     { href: "/admin/students", label: "O'quvchilar", icon: Users },
     { href: "/admin/educators", label: "Tarbiyachilar", icon: Building2 },
     { href: "/admin/categories", label: "Kategoriyalar", icon: Settings },
-    { href: "/admin/reports", label: "Hisobotlar", icon: CreditCard },
+    { href: "/admin/reports", label: "Hisobotlar", icon: BarChart3 },
+    { href: "/dashboard/settings", label: "Sozlamalar", icon: Settings },
   ];
 
   const educatorLinks = [
     { href: "/dashboard", label: "Guruh paneli", icon: LayoutDashboard },
     { href: "/dashboard/students", label: "O'quvchilar ro'yxati", icon: Users },
+    { href: "/dashboard/settings", label: "Sozlamalar", icon: Settings },
   ];
 
   const links = isAdmin ? adminLinks : educatorLinks;
