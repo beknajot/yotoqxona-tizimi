@@ -1,11 +1,11 @@
-require('dotenv').config();
-const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require('@prisma/adapter-pg');
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import bcrypt from "bcryptjs";
 
 const pool = new Pool({ 
-  connectionString: process.env.DIRECT_URL,
+  connectionString: process.env.DIRECT_URL, // Seed uchun Direct URL yaxshiroq
   ssl: { rejectUnauthorized: false }
 });
 const adapter = new PrismaPg(pool);
