@@ -23,7 +23,7 @@ export default async function EducatorStudentsPage() {
     }
   });
 
-  const initialStudents = studentsRaw.map(s => ({
+  const initialStudents = studentsRaw.map((s: any) => ({
     id: s.id, // Baza ID si (DeductModal va actions uchun kerak)
     studentId: s.studentId, // Ekranda ko'rsatiladigan ID (ST001)
     name: s.name,
@@ -42,7 +42,7 @@ export default async function EducatorStudentsPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  const initialLogs = logsRaw.map(log => ({
+  const initialLogs = logsRaw.map((log: any) => ({
     id: log.id,
     studentId: log.studentId, // studentni topish uchun Baza ID
     amount: log.pointsDeducted,

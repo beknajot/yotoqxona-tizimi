@@ -27,7 +27,7 @@ export default async function EducatorDashboard() {
     }
   });
 
-  const students = studentsRaw.map(s => ({
+  const students = studentsRaw.map((s: any) => ({
     id: s.id,
     studentId: s.studentId,
     name: s.name,
