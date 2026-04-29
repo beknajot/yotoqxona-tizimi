@@ -35,12 +35,12 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
   const [selectedEducator, setSelectedEducator] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // Form states
   const [formData, setFormData] = useState({
     name: "",
     login: "",
     password: "",
-    gender: "MALE"
+    gender: "MALE",
+    role: "EDUCATOR"
   });
   const [newPassword, setNewPassword] = useState("");
 
@@ -71,7 +71,8 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
       await updateEducatorAction(selectedEducator.id, {
         name: formData.name,
         login: formData.login,
-        gender: formData.gender
+        gender: formData.gender,
+        role: formData.role
       });
       toast.success("Ma'lumotlar yangilandi");
       setIsEditOpen(false);
@@ -115,7 +116,8 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
       name: e.name,
       login: e.login,
       password: "",
-      gender: e.gender
+      gender: e.gender,
+      role: e.role || "EDUCATOR"
     });
     setIsEditOpen(true);
   };
@@ -165,20 +167,37 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
                   required 
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Jinsi</label>
-                <Select 
-                  value={formData.gender}
-                  onValueChange={(v) => setFormData({...formData, gender: v || ""})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MALE">Erkak (O'g'il bolalar tarbiyachisi)</SelectItem>
-                    <SelectItem value="FEMALE">Ayol (Qiz bolalar tarbiyachisi)</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Jinsi</label>
+                  <Select 
+                    value={formData.gender}
+                    onValueChange={(v) => setFormData({...formData, gender: v || ""})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MALE">Erkak</SelectItem>
+                      <SelectItem value="FEMALE">Ayol</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Rol</label>
+                  <Select 
+                    value={formData.role}
+                    onValueChange={(v) => setFormData({...formData, role: v || "EDUCATOR"})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EDUCATOR">Tarbiyachi</SelectItem>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={loading} className="w-full">
@@ -212,7 +231,12 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
                   </Button>
                 </div>
               </div>
-              <CardTitle className="mt-4">{educator.name}</CardTitle>
+              <CardTitle className="mt-4 flex items-center gap-2">
+                {educator.name}
+                {educator.role === "ADMIN" && (
+                  <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded border border-primary/20">ADMIN</span>
+                )}
+              </CardTitle>
               <p className="text-xs text-muted-foreground font-mono">@{educator.login}</p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -285,20 +309,37 @@ export default function AdminEducatorsClient({ initialEducators }: any) {
                 required 
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Jinsi</label>
-              <Select 
-                value={formData.gender}
-                onValueChange={(v) => setFormData({...formData, gender: v || ""})}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="MALE">Erkak</SelectItem>
-                  <SelectItem value="FEMALE">Ayol</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Jinsi</label>
+                <Select 
+                  value={formData.gender}
+                  onValueChange={(v) => setFormData({...formData, gender: v || ""})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MALE">Erkak</SelectItem>
+                    <SelectItem value="FEMALE">Ayol</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Rol</label>
+                <Select 
+                  value={formData.role}
+                  onValueChange={(v) => setFormData({...formData, role: v || "EDUCATOR"})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EDUCATOR">Tarbiyachi</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter className="pt-4">
               <Button type="submit" disabled={loading} className="w-full">

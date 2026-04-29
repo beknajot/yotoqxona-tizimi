@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { 
   Plus, Search, Edit2, Trash2, UserPlus, 
-  ChevronRight, Users, GraduationCap, Filter 
+  ChevronRight, Users, GraduationCap, Filter, History, Undo2 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,17 +19,28 @@ import {
   Select, SelectContent, SelectItem, 
   SelectTrigger, SelectValue 
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { addStudentAction, deleteStudentAction, updateStudentAction } from "./actions";
+import { revertScoreAction } from "../reports/actions";
 
-export default function AdminStudentsClient({ initialStudents, educators }: any) {
+export default function AdminStudentsClient({ initialStudents, educators, initialLogs = [] }: any) {
   const [students, setStudents] = useState(initialStudents);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [logs, setLogs] = useState<any[]>(initialLogs);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [selectedHistoryStudent, setSelectedHistoryStudent] = useState<string | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -95,6 +106,26 @@ export default function AdminStudentsClient({ initialStudents, educators }: any)
     });
     setIsEditOpen(true);
   };
+
+  const openHistory = (id: string) => {
+    setSelectedHistoryStudent(id);
+    setHistoryOpen(true);
+  };
+
+  const handleRevert = async (logId: string) => {
+    if (!confirm("Haqiqatdan ham bu ayirilgan ballni bekor qilmoqchimisiz?")) return;
+    try {
+      await revertScoreAction(logId);
+      toast.success("Ball qaytarildi!");
+      setLogs(logs.filter((l: any) => l.id !== logId));
+      window.location.reload(); // update table scores
+    } catch (error: any) {
+      toast.error(error.message || "Xatolik yuz berdi");
+    }
+  };
+
+  const activeStudentHistory = logs.filter((l: any) => l.studentId === selectedHistoryStudent);
+  const activeStudentName = students.find((s: any) => s.id === selectedHistoryStudent)?.name;
 
   return (
     <div className="space-y-6">
@@ -208,7 +239,15 @@ export default function AdminStudentsClient({ initialStudents, educators }: any)
                 {filteredStudents.map((student: any) => (
                   <TableRow key={student.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-medium text-primary">{student.studentId}</TableCell>
-                    <TableCell className="font-semibold">{student.name}</TableCell>
+                    <TableCell className="font-semibold">
+                      <button 
+                        onClick={() => openHistory(student.id)}
+                        className="hover:underline font-semibold flex items-center gap-2"
+                      >
+                        {student.name}
+                        <History className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </TableCell>
                     <TableCell>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         student.gender === "MALE" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"
@@ -321,6 +360,57 @@ export default function AdminStudentsClient({ initialStudents, educators }: any)
           </form>
         </DialogContent>
       </Dialog>
+      {/* History Sheet */}
+      <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+        <SheetContent className="sm:max-w-xl overflow-y-auto w-full">
+          <SheetHeader className="mb-6">
+            <SheetTitle>{activeStudentName} tarixi</SheetTitle>
+            <SheetDescription>
+              Ushbu o'quvchidan shu kungacha qachon va kim tomonidan qancha ball ayirilgani tarixi.
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="space-y-4">
+            {activeStudentHistory.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground border rounded-lg bg-muted/20">
+                Ushbu o'quvchidan hali ball ayirilmagan.
+              </div>
+            ) : (
+              activeStudentHistory.map((log: any) => (
+                <div key={log.id} className="border rounded-lg p-4 space-y-3 relative overflow-hidden group">
+                  <div className="absolute left-0 top-0 w-1 bg-destructive h-full"></div>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold text-sm">{log.category}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">{log.date}</p>
+                    </div>
+                    <div className="bg-destructive/10 text-destructive font-bold px-2 py-1 rounded text-sm shrink-0">
+                      -{log.amount} ball
+                    </div>
+                  </div>
+                  
+                  <div className="bg-muted p-2 rounded text-sm italic">
+                    "{log.comment}"
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-muted-foreground">Tarbiyachi: {log.educator}</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 text-xs gap-1 border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                      onClick={() => handleRevert(log.id)}
+                    >
+                      <Undo2 className="w-3 h-3" />
+                      Qaytarish
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

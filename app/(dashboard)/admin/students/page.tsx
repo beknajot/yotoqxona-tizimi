@@ -28,10 +28,32 @@ export default async function AdminStudentsPage() {
     where: { role: "EDUCATOR" }
   });
 
+  const logs = await db.scoreLog.findMany({
+    include: {
+      category: true,
+      educator: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const formattedLogs = logs.map(log => ({
+    id: log.id,
+    studentId: log.studentId,
+    amount: log.pointsDeducted,
+    category: log.category?.name || "Noma'lum kategoriya",
+    comment: log.comment,
+    date: log.createdAt.toLocaleString('uz-UZ', { 
+      year: 'numeric', month: '2-digit', day: '2-digit', 
+      hour: '2-digit', minute: '2-digit' 
+    }),
+    educator: log.educator.name,
+  }));
+
   return (
     <AdminStudentsClient 
       initialStudents={JSON.parse(JSON.stringify(students))} 
       educators={JSON.parse(JSON.stringify(educators))} 
+      initialLogs={formattedLogs}
     />
   );
 }

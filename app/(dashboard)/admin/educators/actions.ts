@@ -5,8 +5,8 @@ import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 
-// Tarbiyachi qo'shish
-export async function addEducatorAction(data: { name: string; login: string; password: string; gender: string }) {
+// Foydalanuvchi qo'shish
+export async function addEducatorAction(data: { name: string; login: string; password: string; gender: string; role: string }) {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") throw new Error("Ruxsat yo'q");
 
@@ -18,7 +18,7 @@ export async function addEducatorAction(data: { name: string; login: string; pas
       login: data.login,
       password: hashedPassword,
       gender: data.gender,
-      role: "EDUCATOR",
+      role: data.role || "EDUCATOR",
     }
   });
 
@@ -58,8 +58,8 @@ export async function updateEducatorPasswordAction(id: string, newPassword: stri
   return { success: true };
 }
 
-// Tarbiyachini tahrirlash (Ism, Login, Gender)
-export async function updateEducatorAction(id: string, data: { name: string; login: string; gender: string }) {
+// Foydalanuvchini tahrirlash (Ism, Login, Gender, Rol)
+export async function updateEducatorAction(id: string, data: { name: string; login: string; gender: string; role: string }) {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") throw new Error("Ruxsat yo'q");
 
@@ -69,6 +69,7 @@ export async function updateEducatorAction(id: string, data: { name: string; log
       name: data.name,
       login: data.login,
       gender: data.gender,
+      role: data.role,
     }
   });
 

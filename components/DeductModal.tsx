@@ -159,7 +159,9 @@ export function DeductModal({ students, children, onDeduct }: DeductModalProps) 
               <label className="text-sm font-medium">Qoidabuzarlik</label>
               <Select value={selectedCategory} onValueChange={(val) => setSelectedCategory(val || "")} required>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Kategoriyani tanlang..." />
+                  <SelectValue placeholder="Kategoriyani tanlang...">
+                    {activeCategory ? activeCategory.name : "Kategoriyani tanlang..."}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(c => (
