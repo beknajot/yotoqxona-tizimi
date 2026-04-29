@@ -10,31 +10,31 @@ export default async function AdminStudentsPage() {
     redirect("/login");
   }
 
-  const students = await db.student.findMany({
-    include: {
-      educator: true,
-      monthlyScores: {
-        take: 1,
-        orderBy: [
-          { year: 'desc' },
-          { month: 'desc' }
-        ]
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  const educators = await db.user.findMany({
-    where: { role: "EDUCATOR" }
-  });
-
-  const logs = await db.scoreLog.findMany({
-    include: {
-      category: true,
-      educator: true
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  const [students, educators, logs] = await Promise.all([
+    db.student.findMany({
+      include: {
+        educator: true,
+        monthlyScores: {
+          take: 1,
+          orderBy: [
+            { year: 'desc' },
+            { month: 'desc' }
+          ]
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    }),
+    db.user.findMany({
+      where: { role: "EDUCATOR" }
+    }),
+    db.scoreLog.findMany({
+      include: {
+        category: true,
+        educator: true
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+  ]);
 
   const formattedLogs = logs.map(log => ({
     id: log.id,

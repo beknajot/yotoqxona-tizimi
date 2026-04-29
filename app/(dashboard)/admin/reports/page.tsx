@@ -13,27 +13,27 @@ export default async function AdminReportsPage() {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  // Barcha ballar ro'yxati (Reyting)
-  const rankings = await db.student.findMany({
-    include: {
-      educator: true,
-      monthlyScores: {
-        where: { month: currentMonth, year: currentYear }
-      }
-    },
-    orderBy: { name: 'asc' }
-  });
-
-  // Barcha loglar
-  const logs = await db.scoreLog.findMany({
-    include: {
-      student: true,
-      category: true,
-      educator: true
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 100 // Oxirgi 100 ta
-  });
+  // Ma'lumotlarni parallel olish
+  const [rankings, logs] = await Promise.all([
+    db.student.findMany({
+      include: {
+        educator: true,
+        monthlyScores: {
+          where: { month: currentMonth, year: currentYear }
+        }
+      },
+      orderBy: { name: 'asc' }
+    }),
+    db.scoreLog.findMany({
+      include: {
+        student: true,
+        category: true,
+        educator: true
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100 // Oxirgi 100 ta
+    })
+  ]);
 
   return (
     <AdminReportsClient 

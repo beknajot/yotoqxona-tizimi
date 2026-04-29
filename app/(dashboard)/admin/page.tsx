@@ -11,23 +11,24 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  // Haqiqiy ma'lumotlarni bazadan olish
-  const totalStudents = await db.student.count();
-  const totalEducators = await db.user.count({
-    where: { role: "EDUCATOR" }
-  });
-  
   // Oxirgi 30 kundagi qoidabuzarliklar
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  const recentViolations = await db.scoreLog.count({
-    where: {
-      createdAt: {
-        gte: thirtyDaysAgo
+
+  // Haqiqiy ma'lumotlarni bazadan parallel olish (Tezlik uchun Promise.all)
+  const [totalStudents, totalEducators, recentViolations] = await Promise.all([
+    db.student.count(),
+    db.user.count({
+      where: { role: "EDUCATOR" }
+    }),
+    db.scoreLog.count({
+      where: {
+        createdAt: {
+          gte: thirtyDaysAgo
+        }
       }
-    }
-  });
+    })
+  ]);
 
   return (
     <div className="space-y-8">

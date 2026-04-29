@@ -13,14 +13,23 @@ export default async function EducatorStudentsPage() {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  // O'quvchilarni olish
-  const studentsRaw = await db.student.findMany({
-    include: {
-      monthlyScores: {
-        where: { month: currentMonth, year: currentYear }
+  // Ma'lumotlarni parallel olish
+  const [studentsRaw, logsRaw] = await Promise.all([
+    db.student.findMany({
+      include: {
+        monthlyScores: {
+          where: { month: currentMonth, year: currentYear }
+        }
       }
-    }
-  });
+    }),
+    db.scoreLog.findMany({
+      include: {
+        category: true,
+        educator: true
+      },
+      orderBy: { createdAt: "desc" }
+    })
+  ]);
 
   const initialStudents = studentsRaw.map((s: any) => {
     const match = s.name.match(/\(([^)]+)\)$/);
@@ -35,15 +44,6 @@ export default async function EducatorStudentsPage() {
       gender: s.gender,
       score: s.monthlyScores[0]?.score ?? 100
     };
-  });
-
-  // O'quvchilar tarixini olish (ScoreLogs)
-  const logsRaw = await db.scoreLog.findMany({
-    include: {
-      category: true,
-      educator: true
-    },
-    orderBy: { createdAt: "desc" }
   });
 
   const initialLogs = logsRaw.map((log: any) => ({
