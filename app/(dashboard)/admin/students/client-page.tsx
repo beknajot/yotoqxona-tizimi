@@ -229,6 +229,7 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                 <TableRow>
                   <TableHead className="w-[100px]">ID</TableHead>
                   <TableHead>F.I.SH</TableHead>
+                  <TableHead>Sinfi</TableHead>
                   <TableHead>Jinsi</TableHead>
                   <TableHead>Tarbiyachi</TableHead>
                   <TableHead>Ball</TableHead>
@@ -236,17 +237,25 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.map((student: any) => (
+                {filteredStudents.map((student: any) => {
+                  const match = student.name.match(/\(([^)]+)\)$/);
+                  const className = match ? match[1] : "Kiritilmagan";
+                  const cleanName = student.name.replace(/\s*\([^)]+\)$/, "").trim();
+                  
+                  return (
                   <TableRow key={student.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-medium text-primary">{student.studentId}</TableCell>
                     <TableCell className="font-semibold">
                       <button 
                         onClick={() => openHistory(student.id)}
-                        className="hover:underline font-semibold flex items-center gap-2"
+                        className="hover:underline font-semibold flex items-center gap-2 text-left"
                       >
-                        {student.name}
-                        <History className="w-3 h-3 text-muted-foreground" />
+                        {cleanName}
+                        <History className="w-3 h-3 text-muted-foreground shrink-0" />
                       </button>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-medium">
+                      {className}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -288,7 +297,7 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )})}
               </TableBody>
             </Table>
           </div>
