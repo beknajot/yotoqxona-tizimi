@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { 
   Plus, Search, Edit2, Trash2, ShieldCheck, 
-  Key, UserCheck, Mail, UserCircle 
+  Key, UserCheck, Mail, UserCircle, Users 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
