@@ -15,7 +15,10 @@ export default async function AdminStudentsPage() {
       educator: true,
       monthlyScores: {
         take: 1,
-        orderBy: { createdAt: 'desc' }
+        orderBy: [
+          { year: 'desc' },
+          { month: 'desc' }
+        ]
       }
     },
     orderBy: { createdAt: 'desc' }
