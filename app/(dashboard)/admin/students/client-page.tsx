@@ -26,6 +26,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { addStudentAction, deleteStudentAction, updateStudentAction } from "./actions";
@@ -50,10 +51,27 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
     educatorId: ""
   });
 
-  const filteredStudents = students.filter((s: any) => 
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.studentId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [genderFilter, setGenderFilter] = useState("ALL");
+  const [classFilter, setClassFilter] = useState("ALL");
+
+  const studentsWithClass = students.map((s: any) => {
+    const match = s.name.match(/\(([^)]+)\)$/);
+    return {
+      ...s,
+      className: match ? match[1] : "Kiritilmagan",
+      cleanName: s.name.replace(/\s*\([^)]+\)$/, "").trim()
+    };
+  });
+
+  const studentsByGender = studentsWithClass.filter((s: any) => genderFilter === "ALL" || s.gender === genderFilter);
+  const availableClasses = Array.from(new Set(studentsByGender.map((s: any) => s.className))).sort();
+
+  const filteredStudents = studentsByGender.filter((s: any) => {
+    const matchesSearch = s.cleanName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          s.studentId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesClass = classFilter === "ALL" || s.className === classFilter;
+    return matchesSearch && matchesClass;
+  });
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,19 +225,44 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
 
       <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Ism yoki ID bo'yicha qidirish..." 
-                className="pl-10 h-11"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+            <Tabs 
+              defaultValue="ALL" 
+              onValueChange={(v) => {
+                setGenderFilter(v);
+                setClassFilter("ALL");
+              }} 
+              className="w-full sm:w-auto"
+            >
+              <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-0">
+                <TabsTrigger value="ALL">Barchasi</TabsTrigger>
+                <TabsTrigger value="MALE">O'g'il</TabsTrigger>
+                <TabsTrigger value="FEMALE">Qiz</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Select value={classFilter} onValueChange={(v) => setClassFilter(v || "ALL")}>
+                <SelectTrigger className="w-full sm:w-[150px]">
+                  <SelectValue placeholder="Barcha sinflar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Barcha sinflar</SelectItem>
+                  {availableClasses.map((c: any) => (
+                    <SelectItem key={String(c)} value={String(c)}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Ism yoki ID ni kiriting..."
+                  className="w-full pl-8 h-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
-            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
-              <Filter className="w-4 h-4" />
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -237,12 +280,7 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.map((student: any) => {
-                  const match = student.name.match(/\(([^)]+)\)$/);
-                  const className = match ? match[1] : "Kiritilmagan";
-                  const cleanName = student.name.replace(/\s*\([^)]+\)$/, "").trim();
-                  
-                  return (
+                {filteredStudents.map((student: any) => (
                   <TableRow key={student.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-medium text-primary">{student.studentId}</TableCell>
                     <TableCell className="font-semibold">
@@ -250,12 +288,12 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                         onClick={() => openHistory(student.id)}
                         className="hover:underline font-semibold flex items-center gap-2 text-left"
                       >
-                        {cleanName}
+                        {student.cleanName}
                         <History className="w-3 h-3 text-muted-foreground shrink-0" />
                       </button>
                     </TableCell>
                     <TableCell className="text-muted-foreground font-medium">
-                      {className}
+                      {student.className}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -297,7 +335,7 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                       </div>
                     </TableCell>
                   </TableRow>
-                )})}
+                ))}
               </TableBody>
             </Table>
           </div>
