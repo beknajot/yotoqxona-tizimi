@@ -126,7 +126,7 @@ export default function ClientStudentsPage({
             </TabsList>
           </Tabs>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Select value={classFilter} onValueChange={setClassFilter}>
+            <Select value={classFilter} onValueChange={(v) => setClassFilter(v || "ALL")}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Barcha sinflar" />
               </SelectTrigger>

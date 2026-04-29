@@ -46,7 +46,7 @@ export default function EducatorDashboardClient({ students, sessionName }: { stu
           </TabsList>
         </Tabs>
 
-        <Select value={classFilter} onValueChange={setClassFilter}>
+        <Select value={classFilter} onValueChange={(v) => setClassFilter(v || "ALL")}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Barcha sinflar" />
           </SelectTrigger>
