@@ -22,13 +22,20 @@ export default async function EducatorDashboard() {
     }
   });
 
-  const students = studentsRaw.map((s: any) => ({
-    id: s.id,
-    studentId: s.studentId,
-    name: s.name,
-    gender: s.gender,
-    score: s.monthlyScores[0]?.score ?? 100
-  }));
+  const students = studentsRaw.map((s: any) => {
+    const match = s.name.match(/\(([^)]+)\)$/);
+    const className = match ? match[1] : "Boshqa";
+    const cleanName = s.name.replace(/\s*\([^)]+\)$/, "").trim();
+
+    return {
+      id: s.id,
+      studentId: s.studentId,
+      name: cleanName,
+      className: className,
+      gender: s.gender,
+      score: s.monthlyScores[0]?.score ?? 100
+    };
+  });
 
   return (
     <EducatorDashboardClient students={students} sessionName={session.name} />

@@ -18,9 +18,9 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { deductPoints } from "./actions";
 import { toast } from "sonner";
@@ -46,6 +46,7 @@ export default function ClientStudentsPage({
   const [logs, setLogs] = useState<LogEntry[]>(initialLogs);
   const [searchTerm, setSearchTerm] = useState("");
   const [genderFilter, setGenderFilter] = useState("ALL");
+  const [classFilter, setClassFilter] = useState("ALL");
   
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedHistoryStudent, setSelectedHistoryStudent] = useState<string | null>(null);
@@ -83,11 +84,17 @@ export default function ClientStudentsPage({
     setHistoryOpen(true);
   };
 
-  const filteredStudents = students.filter(s => {
+  // Avval jins bo'yicha ajratamiz (sinflar ro'yxatini olish uchun)
+  const studentsByGender = students.filter(s => genderFilter === "ALL" || s.gender === genderFilter);
+  
+  // Shu jinsdagi mavjud sinflar ro'yxatini shakllantiramiz
+  const availableClasses = Array.from(new Set(studentsByGender.map(s => s.className))).sort();
+
+  const filteredStudents = studentsByGender.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           s.studentId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesGender = genderFilter === "ALL" || s.gender === genderFilter;
-    return matchesSearch && matchesGender;
+    const matchesClass = classFilter === "ALL" || s.className === classFilter;
+    return matchesSearch && matchesClass;
   });
 
   const activeStudentHistory = logs.filter(l => l.studentId === selectedHistoryStudent);
@@ -104,14 +111,32 @@ export default function ClientStudentsPage({
 
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
-          <Tabs defaultValue="ALL" onValueChange={setGenderFilter} className="w-full sm:w-auto">
+          <Tabs 
+            defaultValue="ALL" 
+            onValueChange={(v) => {
+              setGenderFilter(v);
+              setClassFilter("ALL"); // Jins o'zgarganda sinf filtrini tozalaymiz
+            }} 
+            className="w-full sm:w-auto"
+          >
             <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-0">
               <TabsTrigger value="ALL">Barchasi</TabsTrigger>
               <TabsTrigger value="MALE">O'g'il bolalar</TabsTrigger>
               <TabsTrigger value="FEMALE">Qiz bolalar</TabsTrigger>
             </TabsList>
           </Tabs>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Select value={classFilter} onValueChange={setClassFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Barcha sinflar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Barcha sinflar</SelectItem>
+                {availableClasses.map(c => (
+                  <SelectItem key={String(c)} value={String(c)}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -132,6 +157,7 @@ export default function ClientStudentsPage({
                 <TableRow>
                   <TableHead>O'quvchi ID</TableHead>
                   <TableHead>F.I.Sh</TableHead>
+                  <TableHead>Sinf</TableHead>
                   <TableHead className="text-right">Joriy Ball</TableHead>
                   <TableHead className="text-right">Harakat</TableHead>
                 </TableRow>
@@ -148,6 +174,11 @@ export default function ClientStudentsPage({
                         {student.name}
                         <History className="w-3 h-3 text-muted-foreground" />
                       </button>
+                    </TableCell>
+                    <TableCell>
+                      <span className="bg-muted px-2 py-1 rounded text-xs font-medium border">
+                        {student.className}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${

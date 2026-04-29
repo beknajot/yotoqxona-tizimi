@@ -22,13 +22,20 @@ export default async function EducatorStudentsPage() {
     }
   });
 
-  const initialStudents = studentsRaw.map((s: any) => ({
-    id: s.id, // Baza ID si (DeductModal va actions uchun kerak)
-    studentId: s.studentId, // Ekranda ko'rsatiladigan ID (ST001)
-    name: s.name,
-    gender: s.gender,
-    score: s.monthlyScores[0]?.score ?? 100
-  }));
+  const initialStudents = studentsRaw.map((s: any) => {
+    const match = s.name.match(/\(([^)]+)\)$/);
+    const className = match ? match[1] : "Boshqa";
+    const cleanName = s.name.replace(/\s*\([^)]+\)$/, "").trim();
+
+    return {
+      id: s.id, // Baza ID si (DeductModal va actions uchun kerak)
+      studentId: s.studentId, // Ekranda ko'rsatiladigan ID (ST001)
+      name: cleanName,
+      className: className,
+      gender: s.gender,
+      score: s.monthlyScores[0]?.score ?? 100
+    };
+  });
 
   // O'quvchilar tarixini olish (ScoreLogs)
   const logsRaw = await db.scoreLog.findMany({

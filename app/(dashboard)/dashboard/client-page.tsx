@@ -4,12 +4,17 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeductModal } from "@/components/DeductModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function EducatorDashboardClient({ students, sessionName }: { students: any[], sessionName: string }) {
   const [genderFilter, setGenderFilter] = useState("ALL");
+  const [classFilter, setClassFilter] = useState("ALL");
 
-  const filteredStudents = students.filter(s => {
-    return genderFilter === "ALL" || s.gender === genderFilter;
+  const studentsByGender = students.filter(s => genderFilter === "ALL" || s.gender === genderFilter);
+  const availableClasses = Array.from(new Set(studentsByGender.map(s => s.className))).sort();
+
+  const filteredStudents = studentsByGender.filter(s => {
+    return classFilter === "ALL" || s.className === classFilter;
   });
 
   return (
@@ -25,12 +30,34 @@ export default function EducatorDashboardClient({ students, sessionName }: { stu
         <DeductModal students={students} />
       </div>
 
-      <Tabs defaultValue="ALL" onValueChange={setGenderFilter} className="w-full">
-        <TabsList className="grid w-full sm:w-96 grid-cols-3 mb-6">
-          <TabsTrigger value="ALL">Barchasi</TabsTrigger>
-          <TabsTrigger value="MALE">O'g'il bolalar</TabsTrigger>
-          <TabsTrigger value="FEMALE">Qiz bolalar</TabsTrigger>
-        </TabsList>
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-6">
+        <Tabs 
+          defaultValue="ALL" 
+          onValueChange={(v) => {
+            setGenderFilter(v);
+            setClassFilter("ALL");
+          }} 
+          className="w-full md:w-auto"
+        >
+          <TabsList className="grid w-full sm:w-96 grid-cols-3">
+            <TabsTrigger value="ALL">Barchasi</TabsTrigger>
+            <TabsTrigger value="MALE">O'g'il bolalar</TabsTrigger>
+            <TabsTrigger value="FEMALE">Qiz bolalar</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <Select value={classFilter} onValueChange={setClassFilter}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Barcha sinflar" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Barcha sinflar</SelectItem>
+            {availableClasses.map(c => (
+              <SelectItem key={String(c)} value={String(c)}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredStudents.length === 0 && (
@@ -47,6 +74,7 @@ export default function EducatorDashboardClient({ students, sessionName }: { stu
                 <CardTitle className="text-lg">{student.name}</CardTitle>
                 <div className="text-sm text-muted-foreground flex items-center justify-between">
                   <span>{student.studentId}</span>
+                  <span className="bg-muted px-2 py-0.5 rounded border">{student.className}</span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -60,9 +88,7 @@ export default function EducatorDashboardClient({ students, sessionName }: { stu
                 </div>
               </CardContent>
             </Card>
-          ))}
         </div>
-      </Tabs>
     </div>
   );
 }
