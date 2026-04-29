@@ -26,6 +26,7 @@ export default async function EducatorStudentsPage() {
     id: s.id, // Baza ID si (DeductModal va actions uchun kerak)
     studentId: s.studentId, // Ekranda ko'rsatiladigan ID (ST001)
     name: s.name,
+    gender: s.gender,
     score: s.monthlyScores[0]?.score ?? 100
   }));
 

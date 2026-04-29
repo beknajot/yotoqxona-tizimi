@@ -192,7 +192,7 @@ export default function AdminStudentsClient({ initialStudents, educators }: any)
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-xl border overflow-hidden">
+          <div className="rounded-xl border overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>

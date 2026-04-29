@@ -7,16 +7,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { revertScoreAction } from "./actions";
 
-export default function AdminReportsClient({ rankings, logs }: any) {
+export default function AdminReportsClient({ rankings, logs: initialLogs }: any) {
   const [rankingSearch, setRankingSearch] = useState("");
   const [logSearch, setLogSearch] = useState("");
+  const [logs, setLogs] = useState(initialLogs);
+  const [isReverting, setIsReverting] = useState(false);
 
   const filteredRankings = rankings.filter((r: any) => 
     r.name.toLowerCase().includes(rankingSearch.toLowerCase()) ||
@@ -27,6 +28,21 @@ export default function AdminReportsClient({ rankings, logs }: any) {
     l.student.name.toLowerCase().includes(logSearch.toLowerCase()) ||
     l.category.name.toLowerCase().includes(logSearch.toLowerCase())
   );
+
+  const handleRevert = async (logId: string) => {
+    if (!confirm("Rostdan ham ushbu ayirilgan ballni bekor qilib o'quvchiga qaytarmoqchimisiz?")) return;
+    setIsReverting(true);
+    try {
+      await revertScoreAction(logId);
+      toast.success("Ball muvaffaqiyatli qaytarildi");
+      setLogs((prev: any[]) => prev.filter(l => l.id !== logId));
+      window.location.reload(); // To update the rankings too
+    } catch (e: any) {
+      toast.error(e.message || "Xatolik yuz berdi");
+    } finally {
+      setIsReverting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -68,7 +84,7 @@ export default function AdminReportsClient({ rankings, logs }: any) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-xl border overflow-hidden">
+              <div className="rounded-xl border overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-muted/50">
                     <TableRow>
@@ -116,7 +132,7 @@ export default function AdminReportsClient({ rankings, logs }: any) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-xl border overflow-hidden">
+              <div className="rounded-xl border overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-muted/50">
                     <TableRow>
@@ -125,6 +141,7 @@ export default function AdminReportsClient({ rankings, logs }: any) {
                       <TableHead>Kategoriya</TableHead>
                       <TableHead>Ball</TableHead>
                       <TableHead>Tarbiyachi</TableHead>
+                      <TableHead className="text-right">Amal</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -139,6 +156,17 @@ export default function AdminReportsClient({ rankings, logs }: any) {
                           <span className="text-red-600 font-bold">-{log.pointsDeducted}</span>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">{log.educator.name}</TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                            onClick={() => handleRevert(log.id)}
+                            disabled={isReverting}
+                          >
+                            Bekor qilish
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

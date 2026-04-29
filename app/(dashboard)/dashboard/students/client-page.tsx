@@ -20,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { deductPoints } from "./actions";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ export default function ClientStudentsPage({
   const [students, setStudents] = useState(initialStudents);
   const [logs, setLogs] = useState<LogEntry[]>(initialLogs);
   const [searchTerm, setSearchTerm] = useState("");
+  const [genderFilter, setGenderFilter] = useState("ALL");
   
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedHistoryStudent, setSelectedHistoryStudent] = useState<string | null>(null);
@@ -81,10 +83,12 @@ export default function ClientStudentsPage({
     setHistoryOpen(true);
   };
 
-  const filteredStudents = students.filter(s => 
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    s.studentId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          s.studentId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGender = genderFilter === "ALL" || s.gender === genderFilter;
+    return matchesSearch && matchesGender;
+  });
 
   const activeStudentHistory = logs.filter(l => l.studentId === selectedHistoryStudent);
   const activeStudentName = students.find(s => s.id === selectedHistoryStudent)?.name;
@@ -100,20 +104,29 @@ export default function ClientStudentsPage({
 
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Ism yoki ID ni kiriting..."
-              className="w-full pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <Tabs defaultValue="ALL" onValueChange={setGenderFilter} className="w-full sm:w-auto">
+            <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-0">
+              <TabsTrigger value="ALL">Barchasi</TabsTrigger>
+              <TabsTrigger value="MALE">O'g'il bolalar</TabsTrigger>
+              <TabsTrigger value="FEMALE">Qiz bolalar</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Ism yoki ID ni kiriting..."
+                className="w-full pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <DeductModal students={students} onDeduct={handleDeduct} />
           </div>
-          <DeductModal students={students} onDeduct={handleDeduct} />
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

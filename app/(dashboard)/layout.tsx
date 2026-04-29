@@ -103,7 +103,7 @@ export default function DashboardLayout({
             <X className="w-5 h-5" />
           </Button>
         </div>
-        <div className="py-4 px-3 space-y-1">
+        <div className="py-4 px-3 space-y-1 flex-1">
           {links.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
@@ -118,6 +118,19 @@ export default function DashboardLayout({
               </Link>
             );
           })}
+        </div>
+        <div className="p-4 border-t mt-auto absolute bottom-0 w-full bg-background">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              router.push("/login");
+            }}
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            Tizimdan chiqish
+          </Button>
         </div>
       </aside>
 
