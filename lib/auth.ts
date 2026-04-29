@@ -6,8 +6,14 @@ import { cookies } from "next/headers";
 
 export async function loginAction(login: string, password: string) {
   try {
-    // Avval Admin/Educator dan qidiramiz
-    const user = await db.user.findUnique({ where: { login } });
+    // Ikkala jadvaldan (Admin/Tarbiyachi va O'quvchi) parallel qidiramiz
+    const [user, studentUser] = await Promise.all([
+      db.user.findUnique({ where: { login } }),
+      db.studentUser.findUnique({
+        where: { login },
+        include: { student: true },
+      })
+    ]);
 
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
@@ -23,12 +29,6 @@ export async function loginAction(login: string, password: string) {
 
       return { success: true, role: user.role };
     }
-
-    // Keyin Student dan qidiramiz
-    const studentUser = await db.studentUser.findUnique({
-      where: { login },
-      include: { student: true },
-    });
 
     if (studentUser) {
       const isMatch = await bcrypt.compare(password, studentUser.password);

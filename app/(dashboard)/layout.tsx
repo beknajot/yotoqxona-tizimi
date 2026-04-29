@@ -57,7 +57,7 @@ export default function DashboardLayout({
             const Icon = link.icon;
             const isActive = pathname === link.href;
             return (
-              <Link key={link.href} href={link.href}>
+              <Link key={link.href} href={link.href} prefetch={true}>
                 <span className={`flex items-center px-4 py-3 rounded-xl transition-all ${
                   isActive 
                   ? "bg-primary text-primary-foreground font-medium shadow-md shadow-primary/20" 
@@ -108,7 +108,7 @@ export default function DashboardLayout({
             const Icon = link.icon;
             const isActive = pathname === link.href;
             return (
-              <Link key={link.href} href={link.href} onClick={() => setIsMobileMenuOpen(false)}>
+              <Link key={link.href} href={link.href} prefetch={true} onClick={() => setIsMobileMenuOpen(false)}>
                 <span className={`flex items-center px-3 py-3 rounded-lg ${
                   isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}>
