@@ -299,7 +299,7 @@ export default function AdminStudentsClient({ initialStudents, educators }: any)
                 <label className="text-sm font-medium">Tarbiyachi</label>
                 <Select 
                   value={formData.educatorId}
-                  onValueChange={(v) => setFormData({...formData, educatorId: v})}
+                  onValueChange={(v) => setFormData({...formData, educatorId: v || ""})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Tanlang" />
