@@ -15,7 +15,6 @@ export default async function EducatorStudentsPage() {
 
   // O'quvchilarni olish
   const studentsRaw = await db.student.findMany({
-    where: { educatorId: session.id },
     include: {
       monthlyScores: {
         where: { month: currentMonth, year: currentYear }
@@ -32,9 +31,6 @@ export default async function EducatorStudentsPage() {
 
   // O'quvchilar tarixini olish (ScoreLogs)
   const logsRaw = await db.scoreLog.findMany({
-    where: {
-      student: { educatorId: session.id }
-    },
     include: {
       category: true,
       educator: true

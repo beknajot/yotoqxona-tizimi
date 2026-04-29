@@ -19,7 +19,6 @@ export default async function EducatorDashboard() {
 
   // Tarbiyachining o'quvchilarini va joriy oy ballarini olib kelamiz
   const studentsRaw = await db.student.findMany({
-    where: { educatorId: session.id },
     include: {
       monthlyScores: {
         where: { month: currentMonth, year: currentYear }
