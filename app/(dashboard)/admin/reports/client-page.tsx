@@ -19,7 +19,7 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
   const [logSearch, setLogSearch] = useState("");
   const [logs, setLogs] = useState(initialLogs);
   const [isReverting, setIsReverting] = useState(false);
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedStudentForHistory, setSelectedStudentForHistory] = useState<{id: string, name: string} | null>(null);
 
   const filteredRankings = rankings.filter((r: any) => 
     r.name.toLowerCase().includes(rankingSearch.toLowerCase()) ||
@@ -99,7 +99,14 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
                   <TableBody>
                     {filteredRankings.map((r: any) => (
                       <TableRow key={r.id}>
-                        <TableCell className="font-semibold">{r.name}</TableCell>
+                        <TableCell className="font-semibold">
+                          <button 
+                            className="text-primary hover:underline text-left transition-colors"
+                            onClick={() => setSelectedStudentForHistory({ id: r.id, name: r.name })}
+                          >
+                            {r.name}
+                          </button>
+                        </TableCell>
                         <TableCell className="text-primary font-mono">{r.studentId}</TableCell>
                         <TableCell className="text-muted-foreground">{r.educator?.name}</TableCell>
                         <TableCell className="text-right font-bold text-lg">
@@ -155,7 +162,7 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
                         <TableCell className="font-medium">
                           <button 
                             className="text-primary hover:underline text-left font-bold transition-colors"
-                            onClick={() => setSelectedLog(log)}
+                            onClick={() => setSelectedStudentForHistory({ id: log.studentId, name: log.student.name })}
                           >
                             {log.student.name}
                           </button>
@@ -186,39 +193,49 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={!!selectedStudentForHistory} onOpenChange={(open) => !open && setSelectedStudentForHistory(null)}>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Qoidabuzarlik tafsilotlari</DialogTitle>
+            <DialogTitle>{selectedStudentForHistory?.name} - Ball ayirish tarixi</DialogTitle>
           </DialogHeader>
-          {selectedLog && (
-            <div className="space-y-4 pt-4">
-              <div className="grid grid-cols-3 text-sm border-b pb-2">
-                <span className="text-muted-foreground font-medium">O'quvchi:</span>
-                <span className="col-span-2 font-bold text-base">{selectedLog.student.name}</span>
-              </div>
-              <div className="grid grid-cols-3 text-sm border-b pb-2">
-                <span className="text-muted-foreground font-medium">Kategoriya:</span>
-                <span className="col-span-2">{selectedLog.category.name}</span>
-              </div>
-              <div className="grid grid-cols-3 text-sm border-b pb-2">
-                <span className="text-muted-foreground font-medium">Ayirilgan ball:</span>
-                <span className="col-span-2 text-destructive font-bold text-lg">-{selectedLog.pointsDeducted}</span>
-              </div>
-              <div className="grid grid-cols-3 text-sm border-b pb-2">
-                <span className="text-muted-foreground font-medium">Kim ayirdi:</span>
-                <span className="col-span-2 font-semibold text-primary">{selectedLog.educator.name}</span>
-              </div>
-              <div className="grid grid-cols-3 text-sm border-b pb-2">
-                <span className="text-muted-foreground font-medium">Qachon:</span>
-                <span className="col-span-2">{new Date(selectedLog.createdAt).toLocaleString('uz-UZ')}</span>
-              </div>
-              <div className="grid grid-cols-3 text-sm">
-                <span className="text-muted-foreground font-medium">Izoh/Sabab:</span>
-                <span className="col-span-2 italic text-muted-foreground">"{selectedLog.comment || "Izoh kiritilmagan"}"</span>
-              </div>
+          <div className="max-h-[60vh] overflow-y-auto mt-2">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead>Sana</TableHead>
+                    <TableHead>Kategoriya</TableHead>
+                    <TableHead>Ball</TableHead>
+                    <TableHead>Tarbiyachi</TableHead>
+                    <TableHead>Izoh</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {logs.filter((l: any) => l.studentId === selectedStudentForHistory?.id).length > 0 ? (
+                    logs.filter((l: any) => l.studentId === selectedStudentForHistory?.id).map((log: any) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(log.createdAt).toLocaleString('uz-UZ')}
+                        </TableCell>
+                        <TableCell className="font-medium text-sm">{log.category.name}</TableCell>
+                        <TableCell className="text-destructive font-bold text-base">-{log.pointsDeducted}</TableCell>
+                        <TableCell className="text-sm">{log.educator.name}</TableCell>
+                        <TableCell className="italic text-xs text-muted-foreground max-w-[150px] truncate" title={log.comment || "Izoh yo'q"}>
+                          {log.comment || "Izoh yo'q"}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground h-24">
+                        Ushbu o'quvchida qoidabuzarliklar tarixi yo'q (yoki oxirgi 100 ta ro'yxatga tushmagan)
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
-          )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
