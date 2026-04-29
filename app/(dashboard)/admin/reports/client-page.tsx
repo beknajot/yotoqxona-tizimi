@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { revertScoreAction } from "./actions";
 
@@ -18,6 +19,7 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
   const [logSearch, setLogSearch] = useState("");
   const [logs, setLogs] = useState(initialLogs);
   const [isReverting, setIsReverting] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<any>(null);
 
   const filteredRankings = rankings.filter((r: any) => 
     r.name.toLowerCase().includes(rankingSearch.toLowerCase()) ||
@@ -150,7 +152,14 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
                         <TableCell className="text-xs text-muted-foreground">
                           {new Date(log.createdAt).toLocaleString('uz-UZ')}
                         </TableCell>
-                        <TableCell className="font-medium">{log.student.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <button 
+                            className="text-primary hover:underline text-left font-bold transition-colors"
+                            onClick={() => setSelectedLog(log)}
+                          >
+                            {log.student.name}
+                          </button>
+                        </TableCell>
                         <TableCell className="max-w-[200px] truncate">{log.category.name}</TableCell>
                         <TableCell>
                           <span className="text-red-600 font-bold">-{log.pointsDeducted}</span>
@@ -176,6 +185,42 @@ export default function AdminReportsClient({ rankings, logs: initialLogs }: any)
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Qoidabuzarlik tafsilotlari</DialogTitle>
+          </DialogHeader>
+          {selectedLog && (
+            <div className="space-y-4 pt-4">
+              <div className="grid grid-cols-3 text-sm border-b pb-2">
+                <span className="text-muted-foreground font-medium">O'quvchi:</span>
+                <span className="col-span-2 font-bold text-base">{selectedLog.student.name}</span>
+              </div>
+              <div className="grid grid-cols-3 text-sm border-b pb-2">
+                <span className="text-muted-foreground font-medium">Kategoriya:</span>
+                <span className="col-span-2">{selectedLog.category.name}</span>
+              </div>
+              <div className="grid grid-cols-3 text-sm border-b pb-2">
+                <span className="text-muted-foreground font-medium">Ayirilgan ball:</span>
+                <span className="col-span-2 text-destructive font-bold text-lg">-{selectedLog.pointsDeducted}</span>
+              </div>
+              <div className="grid grid-cols-3 text-sm border-b pb-2">
+                <span className="text-muted-foreground font-medium">Kim ayirdi:</span>
+                <span className="col-span-2 font-semibold text-primary">{selectedLog.educator.name}</span>
+              </div>
+              <div className="grid grid-cols-3 text-sm border-b pb-2">
+                <span className="text-muted-foreground font-medium">Qachon:</span>
+                <span className="col-span-2">{new Date(selectedLog.createdAt).toLocaleString('uz-UZ')}</span>
+              </div>
+              <div className="grid grid-cols-3 text-sm">
+                <span className="text-muted-foreground font-medium">Izoh/Sabab:</span>
+                <span className="col-span-2 italic text-muted-foreground">"{selectedLog.comment || "Izoh kiritilmagan"}"</span>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
