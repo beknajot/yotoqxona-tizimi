@@ -88,6 +88,7 @@ export default function EducatorDashboardClient({ students, sessionName }: { stu
                 </div>
               </CardContent>
             </Card>
+          ))}
         </div>
     </div>
   );
