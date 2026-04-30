@@ -15,6 +15,7 @@ import {
   BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function DashboardLayout({
   children,
@@ -148,7 +149,8 @@ export default function DashboardLayout({
           <div className="font-medium text-sm text-muted-foreground mr-auto md:ml-0 ml-4">
             {isAdmin ? "Admin Paneli" : "Tarbiyachi Paneli"}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <div className="text-right hidden sm:block">
               <div className="text-sm font-semibold">User</div>
               <div className="text-xs text-muted-foreground lowercase">{isAdmin ? "Admin" : "Tarbiyachi"}</div>

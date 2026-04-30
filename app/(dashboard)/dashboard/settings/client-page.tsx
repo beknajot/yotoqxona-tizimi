@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, UserCircle, Save, ShieldCheck } from "lucide-react";
+import { Lock, UserCircle, Save, ShieldCheck, Moon, Sun, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { updateProfilePasswordAction, updateProfileLoginAction } from "./actions";
+import { useTheme } from "next-themes";
 
 export default function SettingsClient({ user }: any) {
   const [loading, setLoading] = useState(false);
+  const { theme, setTheme } = useTheme();
   const [passData, setPassData] = useState({
     current: "",
     new: "",
@@ -67,6 +69,44 @@ export default function SettingsClient({ user }: any) {
         <h2 className="text-3xl font-bold tracking-tight">Sozlamalar</h2>
         <p className="text-muted-foreground">Shaxsiy ma'lumotlar va xavfsizlik.</p>
       </div>
+
+      {/* Theme Card */}
+      <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Monitor className="w-5 h-5 text-primary" />
+            Ko'rinish rejimi
+          </CardTitle>
+          <CardDescription>Tizimning kunduzgi yoki tungi ko'rinishini tanlang.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { value: "light", label: "Kunduzgi", Icon: Sun },
+              { value: "dark",  label: "Tungi",    Icon: Moon },
+              { value: "system",label: "Avtomatik",Icon: Monitor },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setTheme(value)}
+                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                  theme === value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-background hover:border-muted-foreground hover:bg-muted text-muted-foreground"
+                }`}
+              >
+                <Icon className={`w-5 h-5 transition-transform duration-200 ${
+                  theme === value ? "scale-110" : ""
+                }`} />
+                <span className="text-xs font-medium">{label}</span>
+                {theme === value && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                )}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm">
         <CardHeader>
