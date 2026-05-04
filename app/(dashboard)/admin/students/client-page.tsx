@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { 
-  Plus, Search, Edit2, Trash2, UserPlus, 
-  ChevronRight, Users, GraduationCap, Filter, History, Undo2 
+  Search, Edit2, Trash2, UserPlus, 
+  History, Undo2, Calendar, ChevronLeft, ChevronRight 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +29,36 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { addStudentAction, deleteStudentAction, updateStudentAction } from "./actions";
 import { revertScoreAction } from "../reports/actions";
 
-export default function AdminStudentsClient({ initialStudents, educators, initialLogs = [] }: any) {
+const MONTH_NAMES = [
+  "", "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
+  "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"
+];
+
+interface MonthEntry { month: number; year: number; }
+
+export default function AdminStudentsClient({
+  initialStudents,
+  educators,
+  initialLogs = [],
+  availableMonths = [],
+  selectedMonth,
+  selectedYear,
+}: {
+  initialStudents: any[];
+  educators: any[];
+  initialLogs?: any[];
+  availableMonths?: MonthEntry[];
+  selectedMonth: number;
+  selectedYear: number;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const [students, setStudents] = useState(initialStudents);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -42,6 +68,30 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
   const [logs, setLogs] = useState<any[]>(initialLogs);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedHistoryStudent, setSelectedHistoryStudent] = useState<string | null>(null);
+
+  // --- Oy navigatsiyasi ---
+  const now = new Date();
+  const isCurrentMonth = selectedMonth === now.getMonth() + 1 && selectedYear === now.getFullYear();
+
+  const navigateToMonth = (month: number, year: number) => {
+    startTransition(() => {
+      router.push(`/admin/students?month=${month}&year=${year}`);
+    });
+  };
+
+  const getPrevMonth = () =>
+    selectedMonth === 1
+      ? { month: 12, year: selectedYear - 1 }
+      : { month: selectedMonth - 1, year: selectedYear };
+
+  const getNextMonth = () =>
+    selectedMonth === 12
+      ? { month: 1, year: selectedYear + 1 }
+      : { month: selectedMonth + 1, year: selectedYear };
+
+  const canGoNext =
+    selectedYear < now.getFullYear() ||
+    (selectedYear === now.getFullYear() && selectedMonth < now.getMonth() + 1);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -223,6 +273,68 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
         </Dialog>
       </div>
 
+      {/* Oy Navigatsiyasi */}
+      <Card className="border-none shadow-md bg-background/50 backdrop-blur-sm">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+              Oy tanlang:
+            </span>
+            {/* Oldingi oy */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => { const p = getPrevMonth(); navigateToMonth(p.month, p.year); }}
+              disabled={isPending}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            {/* Ko'rinayotgan oy */}
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-background/80 backdrop-blur min-w-[160px] justify-center">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span className="font-semibold text-sm">
+                {MONTH_NAMES[selectedMonth]} {selectedYear}
+              </span>
+              {isCurrentMonth && (
+                <Badge variant="default" className="text-xs px-1.5 py-0 ml-1">Hozir</Badge>
+              )}
+            </div>
+            {/* Keyingi oy */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => { const n = getNextMonth(); navigateToMonth(n.month, n.year); }}
+              disabled={!canGoNext || isPending}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            {/* Tezkor oy tugmalari */}
+            <div className="flex gap-1 flex-wrap">
+              {availableMonths.slice(0, 6).map((m) => {
+                const isActive = m.month === selectedMonth && m.year === selectedYear;
+                return (
+                  <Button
+                    key={`${m.year}-${m.month}`}
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 text-xs px-3"
+                    onClick={() => navigateToMonth(m.month, m.year)}
+                    disabled={isPending}
+                  >
+                    {MONTH_NAMES[m.month].slice(0, 3)} {m.year}
+                  </Button>
+                );
+              })}
+            </div>
+            {isPending && (
+              <span className="text-xs text-muted-foreground animate-pulse ml-2">Yuklanmoqda...</span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
@@ -275,7 +387,12 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
                   <TableHead>Sinfi</TableHead>
                   <TableHead>Jinsi</TableHead>
                   <TableHead>Tarbiyachi</TableHead>
-                  <TableHead>Ball</TableHead>
+                  <TableHead>
+                    <span className="flex items-center gap-1">
+                      Ball
+                      <span className="text-xs text-muted-foreground font-normal">({MONTH_NAMES[selectedMonth]})</span>
+                    </span>
+                  </TableHead>
                   <TableHead className="text-right">Amallar</TableHead>
                 </TableRow>
               </TableHeader>
@@ -411,9 +528,9 @@ export default function AdminStudentsClient({ initialStudents, educators, initia
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
         <SheetContent className="sm:max-w-xl overflow-y-auto w-full">
           <SheetHeader className="mb-6">
-            <SheetTitle>{activeStudentName} tarixi</SheetTitle>
+            <SheetTitle>{activeStudentName} — {MONTH_NAMES[selectedMonth]} {selectedYear}</SheetTitle>
             <SheetDescription>
-              Ushbu o'quvchidan shu kungacha qachon va kim tomonidan qancha ball ayirilgani tarixi.
+              {MONTH_NAMES[selectedMonth]} {selectedYear} oyida qachon va kim tomonidan qancha ball ayirilgani.
             </SheetDescription>
           </SheetHeader>
           
