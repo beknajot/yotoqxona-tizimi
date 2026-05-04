@@ -75,6 +75,8 @@ model ScoreLog {
   id             String   @id @default(cuid())
   pointsDeducted Int
   comment        String
+  month          Int      @default(1)  // Ball ayirilgan oy (1-12)
+  year           Int      @default(2025) // Ball ayirilgan yil
   isCancelled    Boolean  @default(false)
   cancelledById  String?
   cancelledAt    DateTime?

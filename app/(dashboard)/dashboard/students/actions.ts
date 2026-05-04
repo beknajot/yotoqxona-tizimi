@@ -42,14 +42,16 @@ export async function deductPoints(studentId: string, amount: number, categoryNa
     }
   });
 
-  // 2. ScoreLog yozish
+  // 2. ScoreLog yozish (qaysi oyda ayirilganligi ham saqlanadi)
   await db.scoreLog.create({
     data: {
       studentId,
       educatorId: session.id,
       categoryId: category.id,
       pointsDeducted: amount,
-      comment
+      comment,
+      month: currentMonth,
+      year: currentYear
     }
   });
 
